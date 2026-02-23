@@ -87,9 +87,16 @@ router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
     const { name, teacherName, classType = 'hifz' } = req.body;
 
+    // Generate a unique code from teacher name + random suffix
+    const baseCode = (teacherName || 'CLS')
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 8);
+    const code = `${baseCode}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+
     const result = await query(
-      'INSERT INTO classes (name, teacher_name, class_type) VALUES ($1, $2, $3) RETURNING *',
-      [name, teacherName, classType]
+      'INSERT INTO classes (name, code, teacher_name, class_type) VALUES ($1, $2, $3, $4) RETURNING *',
+      [name, code, teacherName, classType]
     );
 
     // Add student_count = 0 for new class
