@@ -28,6 +28,8 @@ export default function AdminDashboard() {
   const [recoveryLoading, setRecoveryLoading] = useState(false);
   const [editingStudent, setEditingStudent] = useState<AdminStudent | null>(null);
   const [editingClass, setEditingClass] = useState<Class | null>(null);
+  const [showCreateTeacher, setShowCreateTeacher] = useState(false);
+  const [newTeacher, setNewTeacher] = useState({ name: '', email: '', password: '' });
   const [suspendModal, setSuspendModal] = useState<{ userId: number; name: string; currentlySuspended: boolean } | null>(null);
   const [suspendReason, setSuspendReason] = useState('');
   const [pendingRecoveryCount, setPendingRecoveryCount] = useState(0);
@@ -243,6 +245,22 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Failed to reject:', error);
       addToast('فشل في رفض الطلب', 'error');
+    }
+  };
+
+  const handleCreateTeacher = async () => {
+    if (!newTeacher.name || !newTeacher.email || !newTeacher.password) {
+      alert(t('common.requiredFields'));
+      return;
+    }
+    try {
+      await adminApi.createTeacher(newTeacher);
+      setNewTeacher({ name: '', email: '', password: '' });
+      setShowCreateTeacher(false);
+      loadData();
+    } catch (error: any) {
+      const msg = error?.response?.data?.message || t('common.errorCreating');
+      alert(msg);
     }
   };
 
@@ -1277,7 +1295,77 @@ export default function AdminDashboard() {
         {/* Users Tab */}
         {activeTab === 'users' && (
           <div>
-            <h2 className="text-2xl font-bold text-[var(--color-text)] mb-6">{t('admin.users')}</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-[var(--color-text)]">{t('admin.users')}</h2>
+              <button
+                onClick={() => setShowCreateTeacher(true)}
+                className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                إضافة أستاذ
+              </button>
+            </div>
+
+            {/* Create Teacher Modal */}
+            {showCreateTeacher && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">إضافة أستاذ جديد</h3>
+                    <button onClick={() => setShowCreateTeacher(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">الاسم الكامل</label>
+                      <input
+                        type="text"
+                        value={newTeacher.name}
+                        onChange={e => setNewTeacher(p => ({ ...p, name: e.target.value }))}
+                        placeholder="الشيخ محمد..."
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">البريد الإلكتروني</label>
+                      <input
+                        type="email"
+                        value={newTeacher.email}
+                        onChange={e => setNewTeacher(p => ({ ...p, email: e.target.value }))}
+                        placeholder="sheikh@example.com"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        dir="ltr"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">كلمة المرور</label>
+                      <input
+                        type="password"
+                        value={newTeacher.password}
+                        onChange={e => setNewTeacher(p => ({ ...p, password: e.target.value }))}
+                        placeholder="6 أحرف على الأقل"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        dir="ltr"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-3 mt-5">
+                    <button
+                      onClick={handleCreateTeacher}
+                      className="flex-1 bg-primary text-white py-2 rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors"
+                    >
+                      إنشاء الحساب
+                    </button>
+                    <button
+                      onClick={() => setShowCreateTeacher(false)}
+                      className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg font-semibold text-sm hover:bg-gray-50 transition-colors"
+                    >
+                      {t('common.cancel')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {usersLoading ? (
               <div className="text-center py-12 text-gray-500">{t('common.loading')}</div>
             ) : (

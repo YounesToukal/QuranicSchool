@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import bcrypt from 'bcrypt';
 import { query } from '../config/database';
 import { authMiddleware, roleMiddleware } from '../middleware/auth';
 
@@ -103,6 +104,29 @@ router.get('/stats/overview', authMiddleware, roleMiddleware('admin'), async (re
 });
 
 // ─── USERS CRUD ───────────────────────────────────────────────────────────────
+
+// Create teacher account
+router.post('/users/teacher', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'الاسم والبريد الإلكتروني وكلمة المرور مطلوبة' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' });
+    }
+    const passwordHash = await bcrypt.hash(password, 12);
+    const result = await query(
+      `INSERT INTO users (role, name, email, password_hash) VALUES ('teacher', $1, $2, $3) RETURNING id, role, name, email, created_at`,
+      [name.trim(), email.trim().toLowerCase(), passwordHash]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error: any) {
+    if (error.code === '23505') return res.status(400).json({ message: 'البريد الإلكتروني مستخدم بالفعل' });
+    console.error('Error creating teacher:', error);
+    res.status(500).json({ message: 'Failed to create teacher' });
+  }
+});
 
 // List all users (teachers and parents)
 router.get('/users', authMiddleware, roleMiddleware('admin'), async (req, res) => {

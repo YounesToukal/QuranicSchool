@@ -167,6 +167,8 @@ export const adminApi = {
     api.post(`/admin/users/${id}/suspend`, { suspend, reason }),
   deleteUser: (id: number) =>
     api.delete(`/admin/users/${id}`),
+  createTeacher: (data: { name: string; email: string; password: string }) =>
+    api.post('/admin/users/teacher', data),
   
   // Students
   getStudents: () =>
