@@ -30,6 +30,7 @@ dist-ssr
 backend/.env
 backend/.env.local
 backend/.env.production
+DEPLOY_SECRETS.txt
 
 # Database
 *.sqlite
