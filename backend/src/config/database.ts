@@ -365,6 +365,14 @@ export const initDatabase = async () => {
       // Ignore if already updated
     }
 
+    // Add target_teacher_id column to messages (teacher-targeted messaging)
+    try {
+      await client.query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS target_teacher_id INTEGER REFERENCES users(id) ON DELETE SET NULL;`);
+      console.log('✅ Messages table updated (target_teacher_id column added)');
+    } catch (error) {
+      // Ignore if already updated
+    }
+
     client.release();
     console.log('✅ Database tables created successfully');
   } catch (error) {
