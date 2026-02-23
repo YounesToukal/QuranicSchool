@@ -1,0 +1,36 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="islamic-pattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+      <!-- Geometric Islamic pattern -->
+      <path d="M50 0 L75 25 L50 50 L25 25 Z" fill="none" stroke="#357d7f" stroke-width="0.5" opacity="0.15"/>
+      <circle cx="50" cy="25" r="3" fill="#D4AF37" opacity="0.2"/>
+      <path d="M0 50 L25 75 L0 100 L-25 75 Z" fill="none" stroke="#357d7f" stroke-width="0.5" opacity="0.15"/>
+      <path d="M100 50 L125 75 L100 100 L75 75 Z" fill="none" stroke="#357d7f" stroke-width="0.5" opacity="0.15"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="400" fill="#FEFBF6"/>
+  <rect width="400" height="400" fill="url(#islamic-pattern)"/>
+  
+  <!-- Main circle -->
+  <circle cx="200" cy="200" r="150" fill="#357d7f" opacity="0.9"/>
+  
+  <!-- Inner decorative circle -->
+  <circle cx="200" cy="200" r="140" fill="none" stroke="#D4AF37" stroke-width="3"/>
+  <circle cx="200" cy="200" r="130" fill="none" stroke="#D4AF37" stroke-width="1" opacity="0.5"/>
+  
+  <!-- Crescent moon shape -->
+  <circle cx="180" cy="200" r="60" fill="#FEFBF6"/>
+  <circle cx="200" cy="200" r="60" fill="#357d7f"/>
+  
+  <!-- Star points -->
+  <path d="M 240 200 L 248 195 L 250 203 L 256 197 L 254 205 L 262 205 L 254 210 L 257 218 L 249 213 L 246 221 L 244 213 L 236 217 L 240 209 L 232 206 L 240 204 Z" 
+        fill="#D4AF37"/>
+  
+  <!-- Text -->
+  <text x="200" y="320" font-family="Montserrat, sans-serif" font-size="36" font-weight="bold" 
+        fill="#357d7f" text-anchor="middle">QuranDec</text>
+  <text x="200" y="350" font-family="Amiri, serif" font-size="20" 
+        fill="#D4AF37" text-anchor="middle">المدرسة القرآنية</text>
+</svg>

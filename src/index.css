@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Dark mode (default) */
+    --color-bg: #1e4a4c;
+    --color-text: #f0e6c8;
+    --color-muted: rgba(240, 230, 200, 0.55);
+  }
+
+  [data-theme="light"] {
+    /* Light mode */
+    --color-bg: #FEFBF6;
+    --color-text: #111827;
+    --color-muted: #6B7280;
+  }
+
+  body {
+    @apply font-montserrat;
+    color: var(--color-text);
+    position: relative;
+    background-color: var(--color-bg);
+  }
+
+  [dir="rtl"] {
+    direction: rtl;
+  }
+
+  .arabic-text {
+    @apply font-amiri;
+  }
+
+  .verse-text {
+    @apply font-scheherazade text-secondary;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface/95 backdrop-blur-sm rounded-lg shadow-lg border border-secondary/20 p-4;
+    color: #1f2937; /* always dark text on the light card surface */
+  }
+
+  /* Card label/text overrides - ensure readability on light card background */
+  .card label,
+  .card p,
+  .card span,
+  .card h1,
+  .card h2,
+  .card h3 {
+    /* text inside cards stays dark – inherited from card color */
+  }
+
+  .btn-primary {
+    @apply bg-primary px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-all duration-200 active:scale-95 shadow-lg ring-1 ring-primary/60;
+    color: #f0e6c8; /* warm cream on primary teal */
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-secondary/90 transition-all duration-200 active:scale-95 shadow-lg shadow-secondary/30;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all;
+  }
+
+  .hizb-cell {
+    @apply aspect-square rounded flex items-center justify-center font-semibold text-[10px] sm:text-xs transition-all shadow-sm;
+  }
+
+  .hizb-completed {
+    @apply bg-green-500 text-white hover:bg-green-600 cursor-pointer hover:scale-110 active:scale-95;
+  }
+
+  .hizb-current {
+    @apply bg-yellow-400 text-gray-900 hover:bg-yellow-500 ring-2 ring-yellow-600 cursor-pointer hover:scale-110 active:scale-95;
+  }
+
+  .hizb-locked {
+    @apply bg-gray-200 text-gray-400 cursor-not-allowed opacity-50;
+  }
+
+  /* === Color visibility fixes for page-level text (outside .card) === */
+
+  /* Elements on the page background inherit the theme text color */
+  .page-heading {
+    color: var(--color-text);
+  }
+
+  /* Tab navigation buttons should respect theme */
+  nav button, nav a {
+    color: inherit;
+  }
+}
+
+@layer utilities {
+  .text-on-bg {
+    color: var(--color-muted);
+  }
+
+  /* === Dark / Light mode universal fixes === */
+  /* Page-level headings that are rendered directly on the background (not inside .card) */
+  /* use the theme text variable so they're visible in both modes */
+  .bg-background > * h1,
+  .bg-background > * h2,
+  .bg-background > * h3,
+  .bg-background > * p,
+  .bg-background > * span {
+    /* inherit by default — don't override; elements that explicitly set a text class will keep it */
+  }
+
+  /* Dashboard section titles rendered on the bg use theme color */
+  .text-primary {
+    /* keep as-is — primary color (#357d7f) is readable on both bg colors */
+  }
+
+  /* Muted text in both modes should be readable */
+  [data-theme="light"] .text-gray-600 {
+    color: #4b5563;
+  }
+
+  [data-theme="light"] .text-gray-500 {
+    color: #6b7280;
+  }
+
+  /* Improve light mode card contrast */
+  [data-theme="light"] .card {
+    border-color: #e5d9c3;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+  }
+
+
+  /* Fix: tables inside card tabs render correctly */
+  .card th {
+    color: #374151;
+  }
+
+  [data-theme="light"] th {
+    color: #374151;
+  }
+
+  .pattern-overlay {
+    position: relative;
+  }
+
+  .pattern-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('/patterns/islamic-pattern.svg');
+    background-repeat: repeat;
+    background-size: 200px;
+    opacity: 0.03;
+    pointer-events: none;
+  }
+}
