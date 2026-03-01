@@ -6,9 +6,10 @@ import { BookOpen, CheckCircle2, Calendar, Printer, Save } from 'lucide-react';
 
 interface TalqinTeacherInterfaceProps {
   classId: number;
+  onProgressLogged?: () => void;
 }
 
-export default function TalqinTeacherInterface({ classId }: TalqinTeacherInterfaceProps) {
+export default function TalqinTeacherInterface({ classId, onProgressLogged }: TalqinTeacherInterfaceProps) {
   const { t } = useTranslation();
   const [students, setStudents] = useState<Student[]>([]);
   const [surahs, setSurahs] = useState<Surah[]>([]);
@@ -203,6 +204,7 @@ export default function TalqinTeacherInterface({ classId }: TalqinTeacherInterfa
       setSelectedStudent(null);
       resetProgressForm();
       await checkTodayProgress(students);
+      onProgressLogged?.();
     } catch (error) {
       console.error('Error saving progress:', error);
       alert(t('common.errorSaving'));

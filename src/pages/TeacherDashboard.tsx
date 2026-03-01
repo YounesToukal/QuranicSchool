@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/authStore';
-import { classApi, studentApi, progressApi } from '@/lib/api';
+import { classApi, studentApi, progressApi, talqinApi } from '@/lib/api';
 import type { Student, Class } from '@/types';
 import Header from '@/components/common/Header';
 import SmartLogInterface from '@/components/teacher/SmartLogInterface';
@@ -39,7 +39,7 @@ export default function TeacherDashboard() {
         setStudents(studentsResponse.data);
 
         // Check which students have progress logged today
-        await checkTodayProgress(studentsResponse.data);
+        await checkTodayProgress(studentsResponse.data, teacherClass.classType);
       }
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -48,20 +48,31 @@ export default function TeacherDashboard() {
     }
   };
 
-  const checkTodayProgress = async (studentsList: Student[]) => {
+  const checkTodayProgress = async (studentsList: Student[], classType?: string) => {
     const today = new Date().toISOString().split('T')[0];
     const loggedSet = new Set<number>();
 
-    // Check each student for today's progress
     await Promise.all(
       studentsList.map(async (student) => {
         try {
-          const response = await progressApi.getByStudent(student.id, {
-            startDate: today,
-            endDate: today
-          });
-          if (response.data && response.data.length > 0) {
-            loggedSet.add(student.id);
+          if (classType === 'talqin') {
+            // Use talqin progress endpoint
+            const response = await talqinApi.getStudentProgress(student.id, 10);
+            if (response.data && response.data.length > 0) {
+              const hasToday = response.data.some((record: any) => {
+                const recordDateString = new Date(record.date).toLocaleDateString('en-CA');
+                return recordDateString === today;
+              });
+              if (hasToday) loggedSet.add(student.id);
+            }
+          } else {
+            const response = await progressApi.getByStudent(student.id, {
+              startDate: today,
+              endDate: today
+            });
+            if (response.data && response.data.length > 0) {
+              loggedSet.add(student.id);
+            }
           }
         } catch (error) {
           console.error(`Error checking progress for student ${student.id}:`, error);
@@ -184,7 +195,7 @@ export default function TeacherDashboard() {
             );
           })()}
 
-          <TalqinTeacherInterface classId={myClass.id} />
+          <TalqinTeacherInterface classId={myClass.id} onProgressLogged={loadData} />
         </div>
 
         <ContactAdminButton />
