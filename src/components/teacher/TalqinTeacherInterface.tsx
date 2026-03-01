@@ -60,20 +60,18 @@ export default function TalqinTeacherInterface({ classId, onProgressLogged }: Ta
   };
 
   const checkTodayProgress = async (studentsList: Student[]) => {
-    const today = new Date();
+    const todayStr = getLocalDateString();
     const loggedSet = new Set<number>();
     
     await Promise.all(
       studentsList.map(async (student) => {
         try {
-          const response = await talqinApi.getStudentProgress(student.id, 10);
+          const response = await talqinApi.getStudentProgress(student.id, 30);
           if (response.data && response.data.length > 0) {
             const hasToday = response.data.some((record: any) => {
-              // Convert the database date (which may be UTC) to local date
-              const recordDate = new Date(record.date);
-              const recordDateString = recordDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
-              const todayLocal = today.toLocaleDateString('en-CA');
-              return recordDateString === todayLocal;
+              // Slice the first 10 chars to get YYYY-MM-DD regardless of timezone/format
+              const recordDate = String(record.date).slice(0, 10);
+              return recordDate === todayStr;
             });
             if (hasToday) {
               loggedSet.add(student.id);
@@ -159,6 +157,11 @@ export default function TalqinTeacherInterface({ classId, onProgressLogged }: Ta
     return points;
   };
 
+  const getLocalDateString = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
   const handleProgressSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStudent) return;
@@ -182,7 +185,7 @@ export default function TalqinTeacherInterface({ classId, onProgressLogged }: Ta
     try {
       const progressData = {
         studentId: selectedStudent.id,
-        date: new Date().toISOString().split('T')[0],
+        date: getLocalDateString(),
         surahPracticed: progressForm.surahPracticed || null,
         versesPracticed: progressForm.versesPracticed || null,
         attendance: progressForm.attendance,
@@ -199,11 +202,13 @@ export default function TalqinTeacherInterface({ classId, onProgressLogged }: Ta
       
       await talqinApi.createProgress(progressData);
 
+      // Immediately mark this student as filled today (optimistic — no re-fetch needed)
+      const savedStudentId = selectedStudent.id;
       alert(t('common.progressSavedSuccess'));
       setShowProgressForm(false);
       setSelectedStudent(null);
       resetProgressForm();
-      await checkTodayProgress(students);
+      setStudentsLoggedToday(prev => new Set([...prev, savedStudentId]));
       onProgressLogged?.();
     } catch (error) {
       console.error('Error saving progress:', error);

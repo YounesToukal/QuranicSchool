@@ -49,26 +49,25 @@ export default function TeacherDashboard() {
   };
 
   const checkTodayProgress = async (studentsList: Student[], classType?: string) => {
-    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const loggedSet = new Set<number>();
 
     await Promise.all(
       studentsList.map(async (student) => {
         try {
           if (classType === 'talqin') {
-            // Use talqin progress endpoint
-            const response = await talqinApi.getStudentProgress(student.id, 10);
+            const response = await talqinApi.getStudentProgress(student.id, 30);
             if (response.data && response.data.length > 0) {
-              const hasToday = response.data.some((record: any) => {
-                const recordDateString = new Date(record.date).toLocaleDateString('en-CA');
-                return recordDateString === today;
-              });
+              const hasToday = response.data.some((record: any) =>
+                String(record.date).slice(0, 10) === todayStr
+              );
               if (hasToday) loggedSet.add(student.id);
             }
           } else {
             const response = await progressApi.getByStudent(student.id, {
-              startDate: today,
-              endDate: today
+              startDate: todayStr,
+              endDate: todayStr
             });
             if (response.data && response.data.length > 0) {
               loggedSet.add(student.id);
