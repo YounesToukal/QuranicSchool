@@ -85,18 +85,33 @@ router.get('/:id', authMiddleware, async (req, res) => {
 // Create class
 router.post('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
-    const { name, teacherName, classType = 'hifz' } = req.body;
+    const { name, teacherId, teacherName: manualTeacherName, classType = 'hifz' } = req.body;
+
+    // If teacherId provided, look up the teacher's name from users table
+    let resolvedTeacherName: string | null = manualTeacherName || null;
+    let resolvedTeacherId: number | null = teacherId ? Number(teacherId) : null;
+    if (resolvedTeacherId) {
+      const teacherResult = await query(
+        'SELECT name FROM users WHERE id = $1 AND role = $2',
+        [resolvedTeacherId, 'teacher']
+      );
+      if (teacherResult.rows.length > 0) {
+        resolvedTeacherName = teacherResult.rows[0].name;
+      } else {
+        resolvedTeacherId = null; // invalid teacher id, ignore
+      }
+    }
 
     // Generate a unique code from teacher name + random suffix
-    const baseCode = (teacherName || 'CLS')
+    const baseCode = (resolvedTeacherName || 'CLS')
       .toUpperCase()
       .replace(/[^A-Z0-9]/g, '')
       .slice(0, 8);
     const code = `${baseCode}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 
     const result = await query(
-      'INSERT INTO classes (name, code, teacher_name, class_type) VALUES ($1, $2, $3, $4) RETURNING *',
-      [name, code, teacherName, classType]
+      'INSERT INTO classes (name, code, teacher_id, teacher_name, class_type) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [name, code, resolvedTeacherId, resolvedTeacherName, classType]
     );
 
     // Add student_count = 0 for new class

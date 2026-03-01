@@ -15,7 +15,7 @@ export default function AdminDashboard() {
   const [selectedRegistration, setSelectedRegistration] = useState<RegistrationRequest | null>(null);
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
   const [showCreateClass, setShowCreateClass] = useState(false);
-  const [newClass, setNewClass] = useState({ teacherName: '', classType: 'hifz' as 'hifz' | 'talqin' });
+  const [newClass, setNewClass] = useState({ teacherId: null as number | null, classType: 'hifz' as 'hifz' | 'talqin' });
   const [advancedStats, setAdvancedStats] = useState<any>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
@@ -173,7 +173,10 @@ export default function AdminDashboard() {
   const handleUpdateClass = async () => {
     if (!editingClass) return;
     try {
-      await adminApi.updateClass(editingClass.id, { name: editingClass.name, teacherName: editingClass.teacherName });
+      await adminApi.updateClass(editingClass.id, {
+        name: editingClass.name,
+        teacherId: editingClass.teacherId ?? null,
+      });
       setEditingClass(null);
       loadData();
     } catch (error) {
@@ -216,6 +219,8 @@ export default function AdminDashboard() {
     if (activeTab === 'overview' && !advancedStats) {
       loadAdvancedStats();
     } else if (activeTab === 'users') {
+      loadAdminUsers();
+    } else if (activeTab === 'classes') {
       loadAdminUsers();
     } else if (activeTab === 'students') {
       loadAdminStudents();
@@ -265,19 +270,19 @@ export default function AdminDashboard() {
   };
 
   const handleCreateClass = async () => {
-    if (!newClass.teacherName) {
+    if (!newClass.teacherId) {
       alert(t('admin.sheikhRequired'));
       return;
     }
     try {
-      const className = `Halaqat Sheikh ${newClass.teacherName}`;
-      
+      const selectedTeacher = adminUsers.find(u => u.id === newClass.teacherId);
+      const className = `Halaqat Sheikh ${selectedTeacher?.name || ''}`;
       await classApi.create({
         name: className,
-        teacherName: newClass.teacherName,
+        teacherId: newClass.teacherId,
         classType: newClass.classType
       });
-      setNewClass({ teacherName: '', classType: 'hifz' });
+      setNewClass({ teacherId: null, classType: 'hifz' });
       setShowCreateClass(false);
       loadData();
     } catch (error) {
@@ -1770,7 +1775,7 @@ export default function AdminDashboard() {
               <button
                 onClick={() => {
                   setShowCreateClass(false);
-                  setNewClass({ teacherName: '', classType: 'hifz' });
+                  setNewClass({ teacherId: null, classType: 'hifz' });
                 }}
                 className="text-gray-500 hover:text-gray-700"
               >
@@ -1822,41 +1827,47 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                {/* Teacher Name Field */}
+                {/* Teacher Dropdown */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {t('admin.sheikhNameLabel')} <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    value={newClass.teacherName}
-                    onChange={(e) => setNewClass({ ...newClass, teacherName: e.target.value })}
+                  <select
+                    value={newClass.teacherId ?? ''}
+                    onChange={(e) => setNewClass({ ...newClass, teacherId: e.target.value ? Number(e.target.value) : null })}
                     className="input-field"
-                    placeholder={t('admin.sheikhPlaceholder')}
                     required
-                  />
-                  
+                  >
+                    <option value="">{t('admin.selectTeacher') || '-- اختر الأستاذ --'}</option>
+                    {adminUsers.filter(u => u.role === 'teacher').map(teacher => (
+                      <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
+                    ))}
+                  </select>
+
                   {/* Auto-generated Class Name Preview */}
-                  {newClass.teacherName && (
-                    <div className={`mt-3 p-3 rounded-lg border ${
-                      newClass.classType === 'hifz' 
-                        ? 'bg-primary/5 dark:bg-primary/10 border-primary/20 dark:border-primary/30' 
-                        : 'bg-secondary/5 dark:bg-secondary/10 border-secondary/20 dark:border-secondary/30'
-                    }`}>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">{t('admin.className')}:</p>
-                      <p className={`text-lg font-semibold ${
-                        newClass.classType === 'hifz' ? 'text-primary' : 'text-secondary'
+                  {newClass.teacherId && (() => {
+                    const selectedTeacher = adminUsers.find(u => u.id === newClass.teacherId);
+                    return (
+                      <div className={`mt-3 p-3 rounded-lg border ${
+                        newClass.classType === 'hifz'
+                          ? 'bg-primary/5 dark:bg-primary/10 border-primary/20 dark:border-primary/30'
+                          : 'bg-secondary/5 dark:bg-secondary/10 border-secondary/20 dark:border-secondary/30'
                       }`}>
-                        {newClass.classType === 'hifz' ? t('landing.hifzTitle') : t('landing.talqinTitle')} - {t('admin.sheikhPrefix')} {newClass.teacherName}
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {newClass.classType === 'hifz' ? t('admin.hifzDescription') : t('admin.talqinDescription')} {t('admin.sheikhPrefix')} {newClass.teacherName}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                        {t('admin.autoCreated')}
-                      </p>
-                    </div>
-                  )}
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">{t('admin.className')}:</p>
+                        <p className={`text-lg font-semibold ${
+                          newClass.classType === 'hifz' ? 'text-primary' : 'text-secondary'
+                        }`}>
+                          {newClass.classType === 'hifz' ? t('landing.hifzTitle') : t('landing.talqinTitle')} - {t('admin.sheikhPrefix')} {selectedTeacher?.name}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          {newClass.classType === 'hifz' ? t('admin.hifzDescription') : t('admin.talqinDescription')} {t('admin.sheikhPrefix')} {selectedTeacher?.name}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                          {t('admin.autoCreated')}
+                        </p>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Action Buttons */}
@@ -1865,7 +1876,7 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={() => {
                       setShowCreateClass(false);
-                      setNewClass({ teacherName: '', classType: 'hifz' });
+                      setNewClass({ teacherId: null, classType: 'hifz' });
                     }}
                     className="flex-1 px-4 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
                   >
@@ -1900,7 +1911,19 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.teacherName')}</label>
-                <input type="text" value={editingClass.teacherName || ''} onChange={(e) => setEditingClass({ ...editingClass, teacherName: e.target.value })} className="input-field" />
+                <select
+                  value={editingClass.teacherId ?? ''}
+                  onChange={(e) => {
+                    const teacher = adminUsers.find(u => u.id === Number(e.target.value));
+                    setEditingClass({ ...editingClass, teacherId: teacher?.id ?? 0, teacherName: teacher?.name ?? '' });
+                  }}
+                  className="input-field"
+                >
+                  <option value="">{t('admin.selectTeacher') || '-- اختر الأستاذ --'}</option>
+                  {adminUsers.filter(u => u.role === 'teacher').map(teacher => (
+                    <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="flex gap-3 mt-5">

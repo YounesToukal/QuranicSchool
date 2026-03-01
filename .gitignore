@@ -35,3 +35,5 @@ DEPLOY_SECRETS.txt
 # Database
 *.sqlite
 *.db
+.vercel
+.env*.local

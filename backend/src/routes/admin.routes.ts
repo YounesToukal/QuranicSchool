@@ -302,15 +302,43 @@ router.delete('/students/:id', authMiddleware, roleMiddleware('admin'), async (r
 router.put('/classes/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, teacherName, classType } = req.body;
+    const { name, teacherId, classType } = req.body;
+
+    // If teacherId provided, resolve teacher name from users table
+    let resolvedTeacherName: string | null | undefined;
+    let resolvedTeacherId: number | null | undefined;
+    if (teacherId !== undefined) {
+      if (teacherId === null || teacherId === '') {
+        resolvedTeacherId = null;
+        resolvedTeacherName = null;
+      } else {
+        const teacherResult = await query(
+          'SELECT name FROM users WHERE id = $1 AND role = $2',
+          [Number(teacherId), 'teacher']
+        );
+        if (teacherResult.rows.length > 0) {
+          resolvedTeacherId = Number(teacherId);
+          resolvedTeacherName = teacherResult.rows[0].name;
+        }
+      }
+    }
+
+    // Build update dynamically so untouched columns are left alone
+    const setClauses: string[] = ['updated_at = CURRENT_TIMESTAMP'];
+    const params: any[] = [];
+    let idx = 1;
+
+    if (name !== undefined) { setClauses.unshift(`name = $${idx++}`); params.push(name); }
+    if (teacherId !== undefined) {
+      setClauses.unshift(`teacher_id = $${idx++}`); params.push(resolvedTeacherId ?? null);
+      setClauses.unshift(`teacher_name = $${idx++}`); params.push(resolvedTeacherName ?? null);
+    }
+    if (classType !== undefined) { setClauses.unshift(`class_type = $${idx++}`); params.push(classType); }
+    params.push(id);
+
     const result = await query(
-      `UPDATE classes SET
-        name = COALESCE($1, name),
-        teacher_name = COALESCE($2, teacher_name),
-        class_type = COALESCE($3, class_type),
-        updated_at = CURRENT_TIMESTAMP
-       WHERE id = $4 RETURNING *`,
-      [name || null, teacherName || null, classType || null, id]
+      `UPDATE classes SET ${setClauses.join(', ')} WHERE id = $${idx} RETURNING *`,
+      params
     );
     if (result.rows.length === 0) return res.status(404).json({ message: 'Class not found' });
     res.json({ id: result.rows[0].id });
