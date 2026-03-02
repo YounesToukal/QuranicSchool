@@ -41,6 +41,11 @@ export const authApi = {
   login: (credentials: { phone?: string; email?: string; password?: string }) =>
     api.post('/auth/login', credentials),
   
+  // Phone-only login (OTP disabled)
+  phoneLogin: (phone: string) =>
+    api.post('/auth/phone-login', { phone }),
+
+  // OTP flow (preserved — re-enable when SMS service is ready)
   requestOTP: (phone: string) =>
     api.post('/auth/request-otp', { phone }),
   

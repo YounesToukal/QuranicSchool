@@ -146,6 +146,50 @@ router.post('/verify-otp', authLimiter, async (req, res) => {
   }
 });
 
+// Phone-only login for parents (OTP disabled — add back when SMS service is ready)
+router.post('/phone-login', authLimiter, async (req, res) => {
+  try {
+    const phone = normalizePhone(req.body.phone);
+
+    if (!phone) {
+      return res.status(400).json({ message: 'Phone number is required' });
+    }
+    if (!isValidPhone(phone)) {
+      return res.status(400).json({ message: 'رقم الهاتف غير صالح. يجب أن يبدأ بـ 05، 06 أو 07 ويتكون من 10 أرقام' });
+    }
+
+    const userResult = await query('SELECT * FROM users WHERE phone = $1', [phone]);
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ message: 'هذا الرقم غير مسجل في النظام' });
+    }
+
+    const user = userResult.rows[0];
+
+    if (user.is_suspended) {
+      return res.status(403).json({
+        message: 'الحساب موقوف مؤقتاً. يرجى التواصل مع الإدارة',
+        suspended: true,
+        reason: user.suspension_reason,
+      });
+    }
+
+    await query('UPDATE users SET login_count = COALESCE(login_count, 0) + 1 WHERE id = $1', [user.id]);
+
+    const token = generateToken({
+      user: { id: user.id, role: user.role, name: user.name, phone: user.phone },
+    });
+
+    res.json({
+      token,
+      user: { id: user.id, role: user.role, name: user.name, phone: user.phone },
+    });
+  } catch (error) {
+    console.error('Error in phone login:', error);
+    res.status(500).json({ message: 'Failed to login' });
+  }
+});
+
 // Admin/Teacher login — strict rate limit
 router.post('/login', authLimiter, async (req, res) => {
   try {

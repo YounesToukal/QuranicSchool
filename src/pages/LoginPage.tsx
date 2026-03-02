@@ -15,53 +15,29 @@ export default function LoginPage() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [otp, setOtp] = useState('');
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [phoneNotFound, setPhoneNotFound] = useState(false);
 
-  const handleRequestOTP = async (e: React.FormEvent) => {
+  const handlePhoneLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setPhoneNotFound(false);
 
     try {
-      await authApi.requestOTP(phone);
-      setStep('otp');
-      setPhoneNotFound(false);
+      const response = await authApi.phoneLogin(phone);
+      const { token, user } = response.data;
+      login(token);
+      if (user.role === 'admin') navigate('/admin');
+      else if (user.role === 'teacher') navigate('/teacher');
+      else navigate('/parent');
     } catch (err: any) {
-      const msg = err.response?.data?.message || '';
-      setError(msg || t('auth.errorSending'));
-      if (err.response?.status === 404 || msg.toLowerCase().includes('not found') || msg.includes('غير مسجل')) {
+      const msg = err.response?.data?.message || t('auth.errorSending');
+      setError(msg);
+      if (err.response?.status === 404 || msg.includes('غير مسجل')) {
         setPhoneNotFound(true);
       }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await authApi.verifyOTP(phone, otp);
-      const { token, user } = response.data;
-      
-      login(token);
-      
-      // Redirect based on role
-      if (user.role === 'admin') {
-        navigate('/admin');
-      } else if (user.role === 'teacher') {
-        navigate('/teacher');
-      } else {
-        navigate('/parent');
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || t('auth.invalidCode'));
     } finally {
       setLoading(false);
     }
@@ -182,9 +158,7 @@ export default function LoginPage() {
                 </button>
               </form>
             ) : (
-              <>
-            {step === 'phone' ? (
-              <form onSubmit={handleRequestOTP} className="space-y-4">
+              <form onSubmit={handlePhoneLogin} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t('auth.phoneNumber')}
@@ -223,7 +197,7 @@ export default function LoginPage() {
                   disabled={loading}
                   className="btn-primary w-full"
                 >
-                  {loading ? t('common.loading') : t('auth.sendOTP')}
+                  {loading ? t('common.loading') : t('common.login')}
                   <ArrowRight className="w-5 h-5 ms-2 inline rtl:rotate-180" />
                 </button>
 
@@ -237,47 +211,6 @@ export default function LoginPage() {
                   </button>
                 </div>
               </form>
-            ) : (
-              <form onSubmit={handleVerifyOTP} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('auth.enterOTP')}
-                  </label>
-                  <input
-                    type="text"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    className="input-field text-center text-2xl tracking-widest"
-                    placeholder="0 0 0 0 0 0"
-                    maxLength={6}
-                    required
-                  />
-                </div>
-
-                {error && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-                    {error}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn-primary w-full"
-                >
-                  {loading ? t('common.loading') : t('auth.verifyOTP')}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setStep('phone')}
-                  className="w-full text-center text-sm text-primary hover:underline"
-                >
-                  {t('common.back')}
-                </button>
-              </form>
-            )}
-            </>
             )}
 
             <div className="mt-6 text-center">
