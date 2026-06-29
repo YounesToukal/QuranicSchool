@@ -69,7 +69,7 @@ const SECTIONS = [
 ];
 
 export default function AdminGuidePage() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isAr = i18n.language === 'ar';
   const BackBtn = () => (
     <Link
@@ -103,7 +103,7 @@ export default function AdminGuidePage() {
           </div>
 
           <p className="text-secondary font-semibold text-xs uppercase tracking-widest mb-2">
-            {isAr ? 'المنصة القرآنية · مسجد أنس بن مالك' : 'Plateforme coranique · Mosquée Anas Ibn Mālik'}
+            {isAr ? `المنصة القرآنية · ${t('app.name')}` : `Plateforme coranique · ${t('app.name')}`}
           </p>
           <h1 className="text-3xl font-bold text-primary mb-2">
             {isAr ? 'دليل المسؤول' : 'Guide Administrateur'}

@@ -54,7 +54,7 @@ export async function notifyAdmin(opts: NotifyAdminOptions): Promise<void> {
         <!-- Header -->
         <tr>
           <td style="background:#1e4a4c;padding:24px 32px;text-align:center;">
-            <p style="margin:0 0 4px;color:#D4AF37;font-size:11px;letter-spacing:3px;text-transform:uppercase;">مسجد أنس بن مالك</p>
+            <p style="margin:0 0 4px;color:#D4AF37;font-size:11px;letter-spacing:3px;text-transform:uppercase;">مسجد مالك بن نبي حي مالكي بن عكنون</p>
             <p style="margin:0;color:#f0e6c8;font-size:18px;font-weight:bold;">رسالة جديدة وردت على المنصة</p>
           </td>
         </tr>
@@ -103,7 +103,7 @@ export async function notifyAdmin(opts: NotifyAdminOptions): Promise<void> {
         <!-- Footer -->
         <tr>
           <td style="background:#f9f6f0;padding:14px 32px;text-align:center;border-top:1px solid #e8e0d0;">
-            <p style="margin:0;color:#aaa;font-size:11px;">المنصة القرآنية الرقمية · مسجد أنس بن مالك</p>
+            <p style="margin:0;color:#aaa;font-size:11px;">المنصة القرآنية الرقمية · مسجد مالك بن نبي حي مالكي بن عكنون</p>
           </td>
         </tr>
       </table>
@@ -162,7 +162,7 @@ export async function notifyTeacher(opts: NotifyTeacherOptions): Promise<void> {
           ${opts.replyEmail ? `<p style="margin-top:16px;">للرد: <a href="mailto:${opts.replyEmail}">${opts.replyEmail}</a></p>` : ''}
         </td></tr>
         <tr><td style="background:#f9f6f0;padding:14px 32px;text-align:center;border-top:1px solid #e8e0d0;">
-          <p style="margin:0;color:#aaa;font-size:11px;">المنصة القرآنية الرقمية · مسجد أنس بن مالك</p>
+          <p style="margin:0;color:#aaa;font-size:11px;">المنصة القرآنية الرقمية · مسجد مالك بن نبي حي مالكي بن عكنون</p>
         </td></tr>
       </table>
     </td></tr>
@@ -214,7 +214,7 @@ export async function notifyParentReply(opts: NotifyParentReplyOptions): Promise
           </div>
         </td></tr>
         <tr><td style="background:#f9f6f0;padding:14px 32px;text-align:center;border-top:1px solid #e8e0d0;">
-          <p style="margin:0;color:#aaa;font-size:11px;">المنصة القرآنية الرقمية · مسجد أنس بن مالك</p>
+          <p style="margin:0;color:#aaa;font-size:11px;">المنصة القرآنية الرقمية · مسجد مالك بن نبي حي مالكي بن عكنون</p>
         </td></tr>
       </table>
     </td></tr>

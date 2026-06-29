@@ -468,7 +468,7 @@ export default function LandingPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-secondary font-semibold text-[11px] uppercase tracking-widest mb-0.5">
-                    {isAr ? 'مسجد أنس بن مالك' : 'Mosquée Anas Ibn Mālik'}
+                    {t('app.name')}
                   </p>
                   <h3 className="text-white text-lg font-bold leading-tight">
                     {t('landing.contactUs')}

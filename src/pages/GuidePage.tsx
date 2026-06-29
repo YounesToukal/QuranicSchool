@@ -80,7 +80,7 @@ const SECTIONS_FR = [
 ];
 
 export default function GuidePage() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { theme } = useThemeStore();
   const isDark = theme === 'dark';
   const isAr = i18n.language === 'ar';
@@ -159,7 +159,7 @@ export default function GuidePage() {
               <>
                 <Section id="goal" number="١" title="هدف المنصة" isDark={isDark}>
                   <p>
-                    منصة <strong className={isDark ? 'text-[#f0e6c8]' : 'text-primary'}>مسجد أنس بن مالك</strong> هي فضاء رقمي مخصص لمتابعة
+                    منصة <strong className={isDark ? 'text-[#f0e6c8]' : 'text-primary'}>{t('app.name')}</strong> هي فضاء رقمي مخصص لمتابعة
                     مسيرة أبنائكم الحافظين في حلقات المسجد. تتيح للآباء الاطلاع على تقدم أبنائهم في الحفظ والتلقين،
                     ومتابعة نقاطهم وترتيبهم الشهري، والتواصل مع الإدارة.
                   </p>
@@ -264,7 +264,7 @@ export default function GuidePage() {
               <>
                 <Section id="goal" number="1" title="Objectif de la plateforme" isDark={isDark}>
                   <p>
-                    La plateforme de la <strong className={isDark ? 'text-[#f0e6c8]' : 'text-primary'}>Mosquée Anas Ibn Mālik</strong> est un espace numérique
+                    La plateforme de la <strong className={isDark ? 'text-[#f0e6c8]' : 'text-primary'}>{t('app.name')}</strong> est un espace numérique
                     dédié au suivi du parcours de mémorisation du Saint Coran de vos enfants inscrits dans les halaqahs de la mosquée.
                   </p>
                   <p>
